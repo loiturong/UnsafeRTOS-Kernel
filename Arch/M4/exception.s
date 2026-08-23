@@ -7,19 +7,24 @@
 .type SVCall_Handler, %function
 
 SVCall_Handler:
-	push {r4, r5, lr}
-	and r4, lr, 0x04
-	cmp r4, 0x04
+/* Grab the stack frame that issued a syscall should be handled with only r0-r3 register.
+ * As these register is caller-save, working with r4-r11 require stack push, in case a Thread
+ * with MSP usage issue this call (like kernel_start), the relative offset is destroyed before
+ * we load that stack frame.
+ */
+	and r0, lr, 0x04
+	cmp r0, 0x04
 	bne get_msp_arg
 
-// Load Stack
-	mrs r5, psp
+	mrs r0, psp
 	b exec
 get_msp_arg:
-	mrs r5, msp
+	mrs r0, msp
 
 exec:
-	ldr r5, [r5, 0x18]	// PC after svc call
+	push {r4-r6, lr}
+	mov r6, r0
+	ldr r5, [r6, 0x18]	// PC after svc call
 	sub r5, 0x02
 	ldrh r5, [r5]		// the SVC instruction
 	and r5, r5, 0xFF	// syscall number
@@ -27,9 +32,23 @@ exec:
 	ldr r4, =syscall_table
 	lsl r5, r5, 0x02
 	ldr r4, [r4, r5]
-	
+
+	/* Restore input argument */
+	ldr r0,  [r6, 0x00]
+	ldr r1,  [r6, 0x04]
+	ldr r2,  [r6, 0x08]
+	ldr r3,  [r6, 0x0C]
+	ldr r12, [r6, 0x10]
+
+	push {r6}
 	blx r4
-	pop {r4, r5, lr}
+	pop {r6}
+
+	/* Expected Syscall function to return r0 (and maybe r1) */
+	str r0,  [r6, 0x00]
+	str r1,  [r6, 0x04]
+
+	pop {r4-r6, lr}
 	bx lr
 
 /* literal pool */
