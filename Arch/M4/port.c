@@ -52,9 +52,11 @@ void syscall_task_yield(void)
 
 void syscall_task_delay(process_control_block_t *p_tsk, uint32_t ticks)
 {
-	g_wait_list_lock = 1;
+	port__critical_enter();
+	
 	scheduler_delayed_task(p_tsk, ticks);
-	g_wait_list_lock = 0;
+
+	port__critical_exit();
 	port__pendsv_set_pend();
 }
 /* -------- Function: Static Implementation     -------- */

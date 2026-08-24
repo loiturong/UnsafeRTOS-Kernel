@@ -38,6 +38,15 @@ static inline void port__unalign_trap_set(void)		{ SCB_CCR |= SCB_CCR_UNALIGN_TR
 static inline void port__div_by_0_set(void)		{ SCB_CCR |= SCB_CCR_DIV_0_TRP; }
 static inline void port__stack_align_set(void)		{ SCB_CCR |= SCB_CCR_STKALIGN; }
 
+#define SCB_SHPR2		(*((uint32_t *)0xE000ED1C))
+#define SCB_SHPR2_PRI_11_POS	24
+#define SCB_SHPR2_PRI_11_MSK	(0xFF << SCB_SHPR2_PRI_11_POS)
+
+static inline uint8_t port__svcall_pri_get(void)
+{ 
+	return ((SCB_SHPR2 & SCB_SHPR2_PRI_11_MSK) >> SCB_SHPR2_PRI_11_POS); 
+}
+
 /* -------- 		SysTick Region          -------- */
 #define SYST_CSR		(*((uint32_t *)0xE000E010))
 #define SYST_CSR_ENABLE		(1 << 0)
@@ -52,11 +61,27 @@ static inline void port__systick_int_disable(void)	{ SYST_CSR &= ~(SYST_CSR_TICK
 
 /* -------- Function: Public Internal API       -------- */
 
-// Raise execution priority to -1, meaning, only Hardfault and Reset can preempt
+// Raise execution priority to -1, meaning, only NMI and Reset can preempt
 static inline void port__fault_mask(void)	{ __asm volatile ("cpsid f\n\t"); }
 static inline void port__fault_unmask(void)	{ __asm volatile ("cpsie f\n\t"); }
 // Raise execution priority to 0, meaning, only NMI, Hardfault, and Reset can preempt
 static inline void port__prior_mask(void)	{ __asm volatile ("cpsid i\n\t"); }
 static inline void port__prior_unmask(void)	{ __asm volatile ("cpsid i\n\t"); }
+
+/* Enter critical region
+ * A critical region is when kernel is handle request and needs to disable all exception that
+ * has higher priority than SVCall
+ */
+static inline void port__critical_enter(void)
+{
+	uint8_t primask = port__svcall_pri_get();
+	__asm volatile ("msr basepri, %0" :: "r" (primask) :);
+}
+
+static inline void port__critical_exit(void)
+{
+	uint8_t primask = 0;
+	__asm volatile ("msr basepri, %0" :: "r" (primask) :);
+}
 
 #endif /* CORE_H */
