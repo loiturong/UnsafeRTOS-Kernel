@@ -10,8 +10,7 @@
 #include <stdint.h>
 
 /* -------- Include:   Public API Include       -------- */
-int scheduler_pick_new_task(void);
-void scheduler_update_wait_list(void);
+#include "scheduler.h"
 
 /* -------- Include: Kernel Modules Include     -------- */
 #include "portable.h"
@@ -54,5 +53,12 @@ void syscall_task_yield(void)
 	return;
 }
 
+void syscall_task_delay(process_control_block_t *p_tsk, uint32_t ticks)
+{
+	g_wait_list_lock = 1;
+	scheduler_delayed_task(p_tsk, ticks);
+	g_wait_list_lock = 0;
+	SET_PENDSV_BIT();
+}
 /* -------- Function: Static Implementation     -------- */
 

@@ -43,6 +43,9 @@ extern node_t *g_p_task_current;
 /* -------- Function:      Public API           -------- */
 
 /* -------- Function: Public Internal API       -------- */
+void scheduler_delayed_task(process_control_block_t *p_tsk, uint32_t ticks);
+int scheduler_pick_new_task(void);
+void scheduler_update_wait_list(void);
 
 /* -------- Function: Static Implementation     -------- */
 

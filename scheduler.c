@@ -52,7 +52,7 @@ int scheduler_pick_new_task(void)
 	return 1;
 }
 
-inline void scheduler_update_wait_list(void)
+void scheduler_update_wait_list(void)
 {
 	node_t *p_tsk;
 	while ((s_wait_list.head != NULL) && (s_wait_list.head->tcb.delayed == 0)) {
@@ -67,7 +67,7 @@ inline void scheduler_update_wait_list(void)
 	return;
 }
 
-inline void scheduler_register_task_static(process_control_block_t *p_process_block)
+void scheduler_register_task_static(process_control_block_t *p_process_block)
 {
 	_Static_assert(
 		sizeof(node_t) <= (PROCESS_BLOCK_SIZE), 
@@ -93,7 +93,7 @@ inline void scheduler_register_task_static(process_control_block_t *p_process_bl
 	return;
 }
 
-inline void scheduler_delayed_task(process_control_block_t *p_tsk, uint32_t ticks)
+void scheduler_delayed_task(process_control_block_t *p_tsk, uint32_t ticks)
 {
 	node_t *p_node = (p_tsk == NULL) ? g_p_task_current : (node_t *)p_tsk;
 	p_node->tcb.status = WAIT;
