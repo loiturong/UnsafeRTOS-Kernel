@@ -13,12 +13,10 @@
 #include "scheduler.h"
 
 /* -------- Include: Kernel Modules Include     -------- */
-#include "portable.h"
+#include "port.h"
+#include "core.h"
 
 /* -------- 		  Define             	-------- */
-#define SCB_ICSR		((uintptr_t *)0xE000ED04)
-#define SCB_ICSR_PENDSVSET_Msk	(1 << 28)
-#define SET_PENDSV_BIT()	do { *SCB_ICSR |= SCB_ICSR_PENDSVSET_Msk; } while(0)
 
 /* -------- 		  Types             	-------- */
 
@@ -40,16 +38,15 @@ void SysTick_Handler(void)
 	scheduler_update_wait_list();
 
 	// PendSV may be preempt by external interrupt
-	if ((*SCB_ICSR & SCB_ICSR_PENDSVSET_Msk) != 0)
+	if(port__pendsv_is_pend())
 		return;
-	
-	SET_PENDSV_BIT();
+	port__pendsv_set_pend();
 	return;
 }
 
 void syscall_task_yield(void)
 {
-	SET_PENDSV_BIT();
+	port__pendsv_set_pend();
 	return;
 }
 
@@ -58,7 +55,7 @@ void syscall_task_delay(process_control_block_t *p_tsk, uint32_t ticks)
 	g_wait_list_lock = 1;
 	scheduler_delayed_task(p_tsk, ticks);
 	g_wait_list_lock = 0;
-	SET_PENDSV_BIT();
+	port__pendsv_set_pend();
 }
 /* -------- Function: Static Implementation     -------- */
 

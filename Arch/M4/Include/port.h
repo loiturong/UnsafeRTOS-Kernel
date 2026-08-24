@@ -1,17 +1,19 @@
 /**
- * @file    : kernel.c
- * @brief   : System Interface
+ * @file    : portable.h
+ * @brief   : Architecture Portable API.
+ * This is portable for Cortex-M4, which is base on ARMv7-M Architecture
+ * Reference: Arm®v7-M Architecture Reference Manual
  *
  * @Author  : Loiturong
  * @License : GNU GENERAL PUBLIC LICENSE
  */
 
+#ifndef PORTABLE_H
+#define PORTABLE_H
+
 /* -------- Include: Compiler Static Library    -------- */
 
 /* -------- Include:   Public API Include       -------- */
-#include "kernel.h"
-#include "port.h"
-#include "scheduler.h"
 
 /* -------- Include: Kernel Modules Include     -------- */
 
@@ -20,28 +22,18 @@
 /* -------- 		  Types             	-------- */
 
 /* -------- Objects:     Global Object          -------- */
-int volatile g_wait_list_lock = 0;
 
 /* -------- Objects:     Static Obejct          -------- */
 
 /* -------- Function:   Static Function         -------- */
 
 /* -------- Function:      Public API           -------- */
-void kernel_start(void) { SYS_CALL(0x00); while(1); }
-void task_yield(void)	{ SYS_CALL(0x01); }
-void task_delay(process_control_block_t *p_tsk, uint32_t ticks)
-{
-	register uintptr_t r0 __asm__("r0") = (uintptr_t)p_tsk;
-	register uintptr_t r1 __asm__("r1") = (uintptr_t)ticks;
-	__asm__ volatile (
-		"svc %[input]"
-		:
-		: [input] "i" (0x02), "r" (r0), "r" (r1)
-		: "memory"
-	);
-}
 
 /* -------- Function: Public Internal API       -------- */
+#define SYS_CALL(index)		do { \
+		__asm volatile ("svc %[input]" :: [input] "i" (index) :); \
+	} while(0)
 
 /* -------- Function: Static Implementation     -------- */
 
+#endif /* PORTABLE_H */

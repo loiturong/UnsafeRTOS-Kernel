@@ -14,8 +14,6 @@
 /* -------- Include: Kernel Modules Include     -------- */
 #include "scheduler.h"
 
-#include "portable.h"
-
 /* -------- 		  Define             	-------- */
 
 /* -------- 		  Types             	-------- */
