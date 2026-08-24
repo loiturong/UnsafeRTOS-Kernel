@@ -21,7 +21,6 @@
 /* -------- 		  Types             	-------- */
 
 /* -------- Objects:     Global Object          -------- */
-extern int volatile g_wait_list_lock;
 
 /* -------- Objects:     Static Obejct          -------- */
 
@@ -32,9 +31,6 @@ extern int volatile g_wait_list_lock;
 /* -------- Function: Public Internal API       -------- */
 void SysTick_Handler(void)
 {
-	if ((g_wait_list_lock == 1))
-		return;
-
 	scheduler_update_wait_list();
 
 	// PendSV may be preempt by external interrupt
@@ -52,12 +48,13 @@ void syscall_task_yield(void)
 
 void syscall_task_delay(process_control_block_t *p_tsk, uint32_t ticks)
 {
+	/* This process touched kernel shared object - scheduler task list */
 	port__critical_enter();
-	
 	scheduler_delayed_task(p_tsk, ticks);
-
 	port__critical_exit();
-	port__pendsv_set_pend();
+	/* the task itself called delay - force a context switch */
+	if (p_tsk == NULL)
+		port__pendsv_set_pend();
 }
 /* -------- Function: Static Implementation     -------- */
 
