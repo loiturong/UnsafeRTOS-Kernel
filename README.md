@@ -1,10 +1,6 @@
 # UnsafeRTOS - Kernel
 
-Simple RTOS kernel with no dependecies.
-
-## Goal
-
-Understand how RTOS works.
+Simple RTOS kernel with minimal dependecies.
 
 ## Project Structure
 ```sh
@@ -54,7 +50,21 @@ Design Consideration:
 
 ## About Memory Management
 
-Kernel now implemented with zero dynamic allocation task create.
+Kernel implemented with zero dynamic allocation task create.
+
+## Exception Design
+
+kernel provide syscall as API, which are wrappers of svc #no.
+This serves as a way to protect kernel's internal shared object from concurrency call.
+Application with interrupts that wish to call some of these syscall must have its priority
+configured to below the priority of SVCall.
+
+| Exception | Priority |
+|---|---|
+| SVCall | 0x-- (configurable - serves as kernel syscall) |
+| PendSV | 0xFF (Refers to Manufacture's prior_bit or use CMSIS) |
+| SysTick | 0xFF |
+| EXTI | 0xFE (no interrupt tested yet) |
 
 ## Example usage
 create task with static allocation.
@@ -102,27 +112,8 @@ void main()
 
 ```
 
-Kernel tested design (Cortex-M4 - ARMv7M):
-
-| Exception | Priority |
-|---|---|
-| Reset | -3 (fixed) |
-| Hardfault | -2 (fixed) |
-| Non-Masked | -1 (fixed) |
-| MemoryManagement | 0 |
-| BusFault | 1 |
-| UsageFault | 2 |
-| DebugMonitor | 3 |
-| SVCall | 4 |
-| PendSV | 0xFF (Refers to Manufacture's prior_bit or use CMSIS) |
-| SysTick | 0xFF |
-| EXTI | 0xFE (no interrupt tested yet) |
-
-
 ## Status
-First view of Concurrency.
-- Multiple Task calling delay at the same time (all modifying task list and wait list)
-- SysTick preempted mid delay function (which also modifying task list)
+Moving to Priority base scheduler.
 
 Testing on emulator.
 
