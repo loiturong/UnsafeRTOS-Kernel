@@ -56,8 +56,10 @@ void task_create_static(
 /* -------- Function: Static Implementation     -------- */
 uintptr_t *task__init_context(uintptr_t *st, uintptr_t *p_task_entry)
 {
-	// Align by 8-byte;
-	*st &= ~(0x07);
+	// Align by 8-bytes
+	uintptr_t alligned_st = (uintptr_t)st;
+	alligned_st &= ~(0x07);
+	st = (uintptr_t *)alligned_st;
 
 	*(--st) = 0x01000000;			// xPRS
 	*(--st) = (uintptr_t)p_task_entry;	// PC
