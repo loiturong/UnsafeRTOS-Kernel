@@ -42,7 +42,7 @@ void task_create_static(
 
 	struct task_control_block_t *p_task = (struct task_control_block_t *)p_kernel_block;
 
-	p_task->task_st = stack_create(p_array_stack, stack_size);
+	p_task->task_st = stack_create(p_array_stack, stack_size / 4);
 	p_task->task_st = task__init_context(p_task->task_st, p_task_entry);
 	p_task->status = RUNNING;
 	
