@@ -64,12 +64,23 @@ uintptr_t *task__init_context(uintptr_t *st, uintptr_t *p_task_entry)
 	*(--st) = 0x01000000;			// xPRS
 	*(--st) = (uintptr_t)p_task_entry;	// PC
 	*(--st) = 0x00000000;			// LR (a task return would cause Busfault here)
-
-	/* R0, R1, R2, R3, and R12 is "dont' care" value */
-	st -= 5;
+	
+	/* Gives each register init value for debug */
+	*(--st) = 0x11110012;			// R12
+	*(--st) = 0x11110003;			// R3
+	*(--st) = 0x11110002;			// R2
+	*(--st) = 0x11110001;			// R1
+	*(--st) = 0x11110000;			// R0
 
 	/* Also preserve space for R4-R11 which will be poped by PendSV on context switch */
-	st -= 8;
+	*(--st) = 0x11110004;			// R4
+	*(--st) = 0x11110005;			// R5
+	*(--st) = 0x11110006;			// R6
+	*(--st) = 0x11110007;			// R7
+	*(--st) = 0x11110008;			// R8
+	*(--st) = 0x11110009;			// R9
+	*(--st) = 0x11110010;			// R10
+	*(--st) = 0x11110011;			// R11
 
 	return st;
 }

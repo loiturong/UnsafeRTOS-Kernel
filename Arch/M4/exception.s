@@ -74,14 +74,14 @@ PendSV_Handler:
 	mrs r0, psp
 
 	sub r0,  0x20
-	str r4,  [r0, 0x20]
-	str r5,  [r0, 0x1c]
-	str r6,  [r0, 0x18]
-	str r7,  [r0, 0x14]
-	str r8,  [r0, 0x10]
-	str r9,  [r0, 0x0c]
-	str r10, [r0, 0x08]
-	str r11, [r0, 0x04]
+	str r4,  [r0, 0x1c]
+	str r5,  [r0, 0x18]
+	str r6,  [r0, 0x14]
+	str r7,  [r0, 0x10]
+	str r8,  [r0, 0x0c]
+	str r9,  [r0, 0x08]
+	str r10, [r0, 0x04]
+	str r11, [r0, 0x00]
 	
 	ldr r2, =g_p_task_current	// pointer to node_t current task pointer
 
@@ -98,14 +98,14 @@ PendSV_Handler:
 	ldr r0, [r1]			// node_t->p_tcb (stack is the first member)
 
 	/* "restore" context of new task */
-	ldr r11, [r0, 0x04]
-	ldr r10, [r0, 0x08]
-	ldr r9,  [r0, 0x0c]
-	ldr r8,  [r0, 0x10]
-	ldr r7,  [r0, 0x14]
-	ldr r6,  [r0, 0x18]
-	ldr r5,  [r0, 0x1c]
-	ldr r4,  [r0, 0x20]
+	ldr r11, [r0, 0x00]
+	ldr r10, [r0, 0x04]
+	ldr r9,  [r0, 0x08]
+	ldr r8,  [r0, 0x0c]
+	ldr r7,  [r0, 0x10]
+	ldr r6,  [r0, 0x14]
+	ldr r5,  [r0, 0x18]
+	ldr r4,  [r0, 0x1c]
 	add r0, 0x20
 	
 	msr psp, r0

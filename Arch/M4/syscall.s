@@ -15,14 +15,14 @@ syscall_kernel_load_first_task:
 	ldr r1, [r1]			// node_t
 	ldr r0, [r1]			// node_t->tcb (first member is already stack pointer)
 
-	ldr r11, [r0, 0x04]
-	ldr r10, [r0, 0x08]
-	ldr r9,  [r0, 0x0c]
-	ldr r8,  [r0, 0x10]
-	ldr r7,  [r0, 0x14]
-	ldr r6,  [r0, 0x18]
-	ldr r5,  [r0, 0x1c]
-	ldr r4,  [r0, 0x20]
+	ldr r11, [r0, 0x00]
+	ldr r10, [r0, 0x04]
+	ldr r9,  [r0, 0x08]
+	ldr r8,  [r0, 0x0c]
+	ldr r7,  [r0, 0x10]
+	ldr r6,  [r0, 0x14]
+	ldr r5,  [r0, 0x18]
+	ldr r4,  [r0, 0x1c]
 	add r0, 0x20
 
 	msr psp, r0
