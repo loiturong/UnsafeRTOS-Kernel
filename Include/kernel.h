@@ -23,11 +23,12 @@
 #define WORD_SIZE(x)			(x * 4)
 #define TASK_CONTROL_BLOCK_SIZE		WORD_SIZE(4)
 #define PROCESS_BLOCK_SIZE		TASK_CONTROL_BLOCK_SIZE + WORD_SIZE(4)
+#define tcb_t				task_control_block_t
 
 /* -------- 		  Types             	-------- */
 typedef struct {
 	uint8_t storage[PROCESS_BLOCK_SIZE];
-} __attribute__((aligned(sizeof(uintptr_t)))) process_control_block_t;
+} __attribute__((aligned(sizeof(uintptr_t)))) task_control_block_t;
 
 /* -------- Objects:     Global Object          -------- */
 
@@ -36,13 +37,13 @@ typedef struct {
 /* -------- Function:   Static Function         -------- */
 
 /* -------- Function:      Public API           -------- */
-void task_create_static(process_control_block_t *p_task_block, uintptr_t *p_array_stack, 
+void task_create(tcb_t *p_task_block, uintptr_t *p_array_stack, 
 		size_t stack_size, uintptr_t *p_task_entry);
 
 // Syscall API
 void kernel_start(void);
 void task_yield(void);
-void task_delay(process_control_block_t *p_tsk, uint32_t ticks);
+void task_delay(tcb_t *p_tsk, uint32_t ticks);
 
 /* -------- Function: Public Internal API       -------- */
 

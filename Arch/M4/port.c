@@ -46,12 +46,5 @@ void syscall_task_yield(void)
 	return;
 }
 
-void syscall_task_delay(process_control_block_t *p_tsk, uint32_t ticks)
-{
-	scheduler_delayed_task(p_tsk, ticks);
-	/* the task itself called delay - force a context switch */
-	if (p_tsk == NULL)
-		port__pendsv_set_pend();
-}
 /* -------- Function: Static Implementation     -------- */
 

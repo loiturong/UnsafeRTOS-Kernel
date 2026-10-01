@@ -74,7 +74,7 @@ void scheduler_update_wait_list(void)
 	return;
 }
 
-void scheduler_register_task_static(process_control_block_t *p_process_block)
+void scheduler_register_task_static(tcb_t *p_process_block)
 {
 	_Static_assert(
 		sizeof(node_t) <= (PROCESS_BLOCK_SIZE), 
@@ -89,7 +89,7 @@ void scheduler_register_task_static(process_control_block_t *p_process_block)
 	return;
 }
 
-void scheduler_delayed_task(process_control_block_t *p_tsk, uint32_t ticks)
+void scheduler_delayed_task(tcb_t *p_tsk, uint32_t ticks)
 {
 	node_t *p_node = (p_tsk == NULL) ? g_p_task_current : (node_t *)p_tsk;
 	tasklist__remove(p_node);
