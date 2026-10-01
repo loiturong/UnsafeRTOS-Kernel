@@ -20,33 +20,31 @@
 /* -------- Include: Kernel Modules Include     -------- */
 
 /* -------- 		  Define             	-------- */
-#define WORD_SIZE(x)			(x * 4)
-#define TASK_CONTROL_BLOCK_SIZE		WORD_SIZE(4)
-#define PROCESS_BLOCK_SIZE		TASK_CONTROL_BLOCK_SIZE + WORD_SIZE(4)
 #define tcb_t				task_control_block_t
 
 /* -------- 		  Types             	-------- */
-typedef struct {
-	uint8_t storage[PROCESS_BLOCK_SIZE];
+typedef enum {
+	RUNNING 	= 1,
+	WAIT		= 2,
+	SUSPENDED	= 3,
+	DONE		= 4,
+} task_status_t;
+
+typedef struct tcb_t {
+	uintptr_t *task_st;
+	task_status_t status;
+	uint32_t delayed;
+
+	struct tcb_t *next;
+	struct tcb_t *prev;
 } __attribute__((aligned(sizeof(uintptr_t)))) task_control_block_t;
 
-/* -------- Objects:     Global Object          -------- */
 
-/* -------- Objects:     Static Obejct          -------- */
-
-/* -------- Function:   Static Function         -------- */
-
-/* -------- Function:      Public API           -------- */
+/* Kernel API */
 void task_create(tcb_t *p_task_block, uintptr_t *p_array_stack, 
 		size_t stack_size, uintptr_t *p_task_entry);
-
-// Syscall API
 void kernel_start(void);
 void task_yield(void);
 void task_delay(tcb_t *p_tsk, uint32_t ticks);
-
-/* -------- Function: Public Internal API       -------- */
-
-/* -------- Function: Static Implementation     -------- */
 
 #endif /* kernel_H */

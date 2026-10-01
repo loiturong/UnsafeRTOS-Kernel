@@ -18,27 +18,27 @@
 
 /* -------- 		  Types             	-------- */
 struct list {
-	node_t *head;
-	node_t *tail;
+	tcb_t *head;
+	tcb_t *tail;
 };
 
 /* -------- Objects:     Global Object          -------- */
-node_t *g_p_task_current;
+tcb_t *g_p_task_current;
 
 /* -------- Objects:     Static Obejct          -------- */
-static node_t *s_p_task_next;
+static tcb_t *s_p_task_next;
 
 struct list s_task_list;
 struct list s_wait_list;
 
 /* -------- Function:   Static Function         -------- */
-static inline void tasklist__create(node_t *p_node);
-static inline void tasklist__insert(node_t *p_node);
-static inline void tasklist__remove(node_t *p_node);
+static inline void tasklist__create(tcb_t *p_node);
+static inline void tasklist__insert(tcb_t *p_node);
+static inline void tasklist__remove(tcb_t *p_node);
 
-static inline void waitlist__create(node_t *head);
-static inline void waitlist__insert(node_t *item, uint32_t ticks);
-static inline node_t *waitlist__remove(void);
+static inline void waitlist__create(tcb_t *head);
+static inline void waitlist__insert(tcb_t *item, uint32_t ticks);
+static inline tcb_t *waitlist__remove(void);
 
 /* -------- Function:      Public API           -------- */
 
@@ -49,7 +49,7 @@ int scheduler_pick_new_task(void)
 		return 0;
 	//if (g_p_task_current == s_p_task_next)
 	//	return 0;
-	while (s_p_task_next->tcb.status != RUNNING)
+	while (s_p_task_next->status != RUNNING)
 		s_p_task_next = s_p_task_next->next;
 
 	g_p_task_current = s_p_task_next;
@@ -60,15 +60,15 @@ int scheduler_pick_new_task(void)
 
 void scheduler_update_wait_list(void)
 {
-	node_t *p_tsk;
-	while ((s_wait_list.head != NULL) && (s_wait_list.head->tcb.delayed == 0)) {
+	tcb_t *p_tsk;
+	while ((s_wait_list.head != NULL) && (s_wait_list.head->delayed == 0)) {
 		p_tsk = waitlist__remove();
 		tasklist__insert(p_tsk);
-		p_tsk->tcb.status = RUNNING;
+		p_tsk->status = RUNNING;
 	}
 
-	if ((s_wait_list.head != NULL) && (s_wait_list.head->tcb.delayed > 0)) {
-		--s_wait_list.head->tcb.delayed;
+	if ((s_wait_list.head != NULL) && (s_wait_list.head->delayed > 0)) {
+		--s_wait_list.head->delayed;
 	}
 
 	return;
@@ -76,11 +76,7 @@ void scheduler_update_wait_list(void)
 
 void scheduler_register_task_static(tcb_t *p_process_block)
 {
-	_Static_assert(
-		sizeof(node_t) <= (PROCESS_BLOCK_SIZE), 
-		"Space for Scheduler + TaskControlBlock is not big enough");
-
-	node_t *p_task_node = (node_t *)p_process_block;
+	tcb_t *p_task_node = (tcb_t *)p_process_block;
 	if(s_task_list.head == NULL) {
 		tasklist__create(p_task_node);
 	} else {
@@ -91,12 +87,12 @@ void scheduler_register_task_static(tcb_t *p_process_block)
 
 void scheduler_delayed_task(tcb_t *p_tsk, uint32_t ticks)
 {
-	node_t *p_node = (p_tsk == NULL) ? g_p_task_current : (node_t *)p_tsk;
+	tcb_t *p_node = (p_tsk == NULL) ? g_p_task_current : (tcb_t *)p_tsk;
 	tasklist__remove(p_node);
-	p_node->tcb.status = WAIT;
+	p_node->status = WAIT;
 
 	if (s_wait_list.head == NULL) {
-		p_node->tcb.delayed = ticks;
+		p_node->delayed = ticks;
 		waitlist__create(p_node);
 	} else {
 		waitlist__insert(p_node, ticks);
@@ -105,7 +101,7 @@ void scheduler_delayed_task(tcb_t *p_tsk, uint32_t ticks)
 }
 
 /* -------- Function: Static Implementation     -------- */
-static inline void tasklist__create(node_t *p_node)
+static inline void tasklist__create(tcb_t *p_node)
 {
 	s_task_list.head = p_node;
 	s_task_list.tail = p_node;
@@ -117,7 +113,7 @@ static inline void tasklist__create(node_t *p_node)
 	s_task_list.tail->next = s_task_list.head;
 }
 
-static inline void tasklist__insert(node_t *p_node)
+static inline void tasklist__insert(tcb_t *p_node)
 {
 	s_task_list.tail->next = p_node;
 	s_task_list.head->prev = p_node;
@@ -127,7 +123,7 @@ static inline void tasklist__insert(node_t *p_node)
 	s_task_list.tail = p_node;
 }
 
-static inline void tasklist__remove(node_t *p_node)
+static inline void tasklist__remove(tcb_t *p_node)
 {
 	// Currently called from task delayed - include case where the p_node is the current task
 	// After this, a context switch is performed, so comment this out for now.
@@ -140,12 +136,12 @@ static inline void tasklist__remove(node_t *p_node)
 	if (p_node == s_p_task_next)
 		s_p_task_next = s_p_task_next->next;
 
-	node_t *temp = p_node->prev;
+	tcb_t *temp = p_node->prev;
 	p_node->next->prev = temp;
 	temp->next = p_node->next;
 }
 
-static inline void waitlist__create(node_t *head)
+static inline void waitlist__create(tcb_t *head)
 {
 	s_wait_list.head = head;
 	s_wait_list.tail = head;
@@ -153,16 +149,16 @@ static inline void waitlist__create(node_t *head)
 	s_wait_list.tail->prev = s_wait_list.head;
 }
 
-static inline void waitlist__insert(node_t *item, uint32_t ticks)
+static inline void waitlist__insert(tcb_t *item, uint32_t ticks)
 {
-	node_t *index = s_wait_list.head;
-	while ((index != s_wait_list.tail) && (ticks > index->tcb.delayed)) {
-		ticks -= index->tcb.delayed;
+	tcb_t *index = s_wait_list.head;
+	while ((index != s_wait_list.tail) && (ticks > index->delayed)) {
+		ticks -= index->delayed;
 		index = index->next;
 	}
 
-	if ((index == s_wait_list.tail) && (ticks >= s_wait_list.tail->tcb.delayed)) {
-		item->tcb.delayed = ticks - s_wait_list.tail->tcb.delayed;
+	if ((index == s_wait_list.tail) && (ticks >= s_wait_list.tail->delayed)) {
+		item->delayed = ticks - s_wait_list.tail->delayed;
 
 		item->prev = s_wait_list.tail;
 		item->next = s_wait_list.head;
@@ -172,8 +168,8 @@ static inline void waitlist__insert(node_t *item, uint32_t ticks)
 		
 		s_wait_list.tail = item;
 	} else {
-		item->tcb.delayed   = ticks;
-		index->tcb.delayed -= ticks;
+		item->delayed   = ticks;
+		index->delayed -= ticks;
 
 		item->prev = index->prev;
 		item->next = index;
@@ -187,9 +183,9 @@ static inline void waitlist__insert(node_t *item, uint32_t ticks)
 	return;
 }
 
-static inline node_t *waitlist__remove(void)
+static inline tcb_t *waitlist__remove(void)
 {
-	node_t *rn = s_wait_list.head;
+	tcb_t *rn = s_wait_list.head;
 	if (s_wait_list.head == s_wait_list.tail) {
 		s_wait_list.head = NULL;
 		s_wait_list.tail = NULL;

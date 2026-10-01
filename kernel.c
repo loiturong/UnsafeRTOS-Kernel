@@ -35,10 +35,6 @@ void task_create(
 	uintptr_t *p_task_entry
 )
 {
-	_Static_assert(
-		sizeof(struct task_control_block_t) <= TASK_CONTROL_BLOCK_SIZE, 
-		"Space for TaskControlBlock is too small");
-
 	struct task_control_block_t *p_task = (struct task_control_block_t *)p_kernel_block;
 
 	p_task->task_st = stack_create(p_array_stack, stack_size / 4);
@@ -50,14 +46,17 @@ void task_create(
 	return;
 }
 
-void kernel_start(void) { SYS_CALL(0x00); while(1); }
-void task_yield(void)	{ SYS_CALL(0x01); }
 void task_delay(tcb_t *p_tsk, uint32_t ticks)
 {
 	// SYS_CALL(0x02);
 	/* Compiler warnning */
 	(void)p_tsk; (void)ticks;
 	return;
+}
+
+void kernel_start()
+{
+	context_switch();
 }
 
 /* -------- Function: Static Implementation     -------- */
