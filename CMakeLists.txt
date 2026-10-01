@@ -7,8 +7,8 @@ set(ARCH M4)
 file(GLOB 
 	k_srcs
 	CONFIGURE_DEPENDS
-	*.c
-	*.s
+	kernel.c
+	scheduler.c
 )
 file(GLOB 
 	a_srcs
