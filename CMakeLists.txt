@@ -13,8 +13,8 @@ file(GLOB
 file(GLOB 
 	a_srcs
 	CONFIGURE_DEPENDS
-	Arch/${ARCH}/*.c
-	Arch/${ARCH}/*.s
+	port.c
+	Arch/${ARCH}/port.s
 )
 
 add_library(${PROJECT_NAME} STATIC
@@ -25,7 +25,7 @@ add_library(${PROJECT_NAME} STATIC
 target_include_directories(${PROJECT_NAME}
     	PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/Include
-	${CMAKE_CURRENT_SOURCE_DIR}/Arch/${ARCH}/Include
+	${CMAKE_CURRENT_SOURCE_DIR}/Arch/${ARCH}/
 )
 
 # TODO: Find a way to tell application to include this
